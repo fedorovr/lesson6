@@ -1,4 +1,4 @@
-package com.csc.lesson6;
+package com.csc.roman_fedorov.todolist;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -10,8 +10,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-public class ReaderContentProvider extends ContentProvider {
-    public static final String AUTHORITY = "com.csc.lesson6";
+public class ToDoTasksContentProvider extends ContentProvider {
+    public static final String AUTHORITY = "com.csc.roman_fedorov.todolist";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
     public static final int ENTRIES = 1;
@@ -24,22 +24,21 @@ public class ReaderContentProvider extends ContentProvider {
         uriMatcher.addURI(AUTHORITY, "/entries/#", ENTRIES_ID);
     }
 
-    private ReaderOpenHelper helper;
+    private TodoDatabaseHelper helper;
 
-    public ReaderContentProvider() {
-        helper = new ReaderOpenHelper(getContext());
+    @Override
+    public boolean onCreate() {
+        helper = TodoDatabaseHelper.getInstance(getContext());
+        return true;
     }
 
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        // Implement this to handle requests to delete one or more rows.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public String getType(@NonNull Uri uri) {
-        // TODO: Implement this to handle requests for the MIME type of the data
-        // at the given URI.
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -49,9 +48,8 @@ public class ReaderContentProvider extends ContentProvider {
         String tableName;
         switch (match) {
             case ENTRIES:
-                tableName = FeedsTable.TABLE_NAME;
+                tableName = ToDoTable.TABLE_NAME;
                 break;
-            case ENTRIES_ID:
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
@@ -62,19 +60,14 @@ public class ReaderContentProvider extends ContentProvider {
     }
 
     @Override
-    public boolean onCreate() {
-        helper = new ReaderOpenHelper(getContext());
-        return true;
-    }
-
-    @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         int match = uriMatcher.match(uri);
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
         switch (match) {
             case ENTRIES:
-                builder.setTables(FeedsTable.TABLE_NAME);
+            case ENTRIES_ID:
+                builder.setTables(ToDoTable.TABLE_NAME);
                 break;
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
@@ -88,7 +81,19 @@ public class ReaderContentProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        int match = uriMatcher.match(uri);
+        int rowsUpdated = 0;
+        switch (match) {
+            case ENTRIES:
+                rowsUpdated = helper.getWritableDatabase().update(ToDoTable.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Not yet implemented");
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return rowsUpdated;
     }
 }

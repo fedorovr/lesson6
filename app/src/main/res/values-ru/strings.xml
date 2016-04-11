@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Список дел</string>
+    <string name="add_task_title">Название новой задачи</string>
+    <string name="add_task_desc">Описание новой задачи</string>
+    <string name="add_task_button">Создать новую задачу</string>
+    <string name="add_task_time">Срок выполнения</string>
+    <string name="empty_fields">Заполните все поля</string>
+    <string name="button_done">Выполнено!</string>
+</resources>

@@ -4,11 +4,64 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/button1"
+    <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="addData"
-        android:text="click me!" />
+        android:layout_height="wrap_content">
 
+        <TextView
+            android:id="@+id/add_task_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_task_title" />
+
+        <EditText
+            android:id="@+id/add_task_title_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_task_title_tv"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/add_task_desc_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_task_title_et"
+            android:text="@string/add_task_desc" />
+
+        <EditText
+            android:id="@+id/add_task_desc_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_task_desc_tv"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/add_task_time_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_task_desc_et"
+            android:text="@string/add_task_time" />
+
+        <EditText
+            android:id="@+id/add_task_time_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/add_task_time_tv"
+            android:focusable="false"
+            android:inputType="date" />
+
+        <Button
+            android:id="@+id/add_task_button_create"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/add_task_time_et"
+            android:text="@string/add_task_button" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/todo_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>
