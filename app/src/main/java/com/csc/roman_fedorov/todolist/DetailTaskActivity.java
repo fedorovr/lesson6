@@ -1,79 +1,78 @@
 package com.csc.roman_fedorov.todolist;
 
-import android.app.DatePickerDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ListView;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+public class DetailTaskActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-public class DetailTaskActivity extends AppCompatActivity {
+    private TagsCursorAdapter adapter;
+    private int taskNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_task);
-        final int position = getIntent().getIntExtra(MainActivity.CLICKED_POSITION, 0) + 1;
+        taskNumber = getIntent().getIntExtra(MainActivity.CLICKED_POSITION, 0) + 1;
 
-        Button confirmButton = (Button) findViewById(R.id.detail_button_confirm);
-        confirmButton.setOnClickListener(new View.OnClickListener() {
+        getSupportLoaderManager().initLoader(MainActivity.TODO_LOADER_ID, null, this);
+
+        final EditText taskTitleEditText = (EditText) findViewById(R.id.detail_edit_title);
+        final EditText taskDescriptionEditText = (EditText) findViewById(R.id.detail_edit_description);
+        Button updateButton = (Button) findViewById(R.id.detail_button_update);
+        updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ContentValues updateValues = new ContentValues();
-                updateValues.put(ToDoTable.COLUMN_IS_DONE, 1);
-                getContentResolver().update(MainActivity.ENTRIES_URI, updateValues, " _ID = ? ",
-                        new String[]{String.valueOf(position)});
+                String taskTitle = taskTitleEditText.getText().toString();
+                String taskDescription = taskDescriptionEditText.getText().toString();
+                ContentValues mUpdateValues = new ContentValues();
+                mUpdateValues.put(ToDoTable.COLUMN_TITLE, taskTitle);
+                mUpdateValues.put(ToDoTable.COLUMN_DESCRIPTION, taskDescription);
+                getContentResolver().update(MainActivity.ENTRIES_URI, mUpdateValues, " _ID = ? ",
+                        new String[]{String.valueOf(taskNumber)});
 
                 Intent intent = new Intent(DetailTaskActivity.this, MainActivity.class);
                 startActivity(intent);
             }
         });
 
-        final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", getResources().getConfiguration().locale);
-        final Calendar calendar = Calendar.getInstance();
-        final EditText timeEditText = (EditText) findViewById(R.id.detail_edit_time);
-        timeEditText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new DatePickerDialog(DetailTaskActivity.this, new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                        Calendar newDate = Calendar.getInstance();
-                        newDate.set(year, monthOfYear, dayOfMonth);
-                        timeEditText.setText(dateFormatter.format(newDate.getTime()));
-                    }
-                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-            }
-        });
+        Cursor cursor = getContentResolver().query(MainActivity.ENTRIES_URI, null, " _ID = ? ",
+                new String[]{String.valueOf(taskNumber)}, null);
+        cursor.moveToNext();
 
-        Cursor cursor = null;
-        try {
-            cursor = getContentResolver().query(Uri.withAppendedPath(MainActivity.ENTRIES_ID_URI,
-                    String.valueOf(position)), null, " _ID = ? ", new String[]{String.valueOf(position)}, null);
-            cursor.moveToNext();
+        String title = cursor.getString(cursor.getColumnIndex(ToDoTable.COLUMN_TITLE));
+        String description = cursor.getString(cursor.getColumnIndex(ToDoTable.COLUMN_DESCRIPTION));
+        taskTitleEditText.setText(title);
+        taskDescriptionEditText.setText(description);
+        cursor.close();
 
-            String title = cursor.getString(cursor.getColumnIndex(ToDoTable.COLUMN_TITLE));
-            String description = cursor.getString(cursor.getColumnIndex(ToDoTable.COLUMN_DESCRIPTION));
-            String time = cursor.getString(cursor.getColumnIndex(ToDoTable.COLUMN_TIME));
+        adapter = new TagsCursorAdapter(this, null, 0);
+        ListView tagsListView = (ListView) findViewById(R.id.tags_listview);
+        tagsListView.setAdapter(adapter);
+    }
 
-            EditText titleEdit = (EditText) findViewById(R.id.detail_edit_title);
-            titleEdit.setText(title);
-            EditText descriptionEdit = (EditText) findViewById(R.id.detail_edit_description);
-            descriptionEdit.setText(description);
-            EditText timeEdit = (EditText) findViewById(R.id.detail_edit_time);
-            timeEdit.setText(time);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, CreateNewTaskActivity.TAGS_URI, null,
+                " " + TagsTable.COLUMN_TASK_ID + " = ? ", new String[]{String.valueOf(taskNumber)}, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.swapCursor(null);
     }
 }

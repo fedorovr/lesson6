@@ -24,7 +24,8 @@
             android:enabled="true"
             android:exported="false" />
 
-        <activity android:name=".DetailTaskActivity"></activity>
+        <activity android:name=".DetailTaskActivity" />
+        <activity android:name=".CreateNewTaskActivity"/>
     </application>
 
 </manifest>
